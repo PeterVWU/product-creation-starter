@@ -8,13 +8,14 @@
 // @match        https://x19z7.vapewholesaleusa.com/GAYygQ6cafEK7hZf6uzf/catalog/product/edit/*
 // @grant        GM_xmlhttpRequest
 // @connect      product-creation-api.vapewholesaleusa.com
+// @connect      localhost
 // ==/UserScript==
 
 (function () {
   "use strict";
 
-  const API_BASE_URL =
-    "https://product-creation-api.vapewholesaleusa.com/api/v1/migrate/product";
+  const API_BASE_URL = "https://product-creation-api.vapewholesaleusa.com/api/v1/migrate/product";
+  //const API_BASE_URL = "http://localhost:3002/api/v1/migrate/product";
 
   const STORE_CONFIG = {
     magento: [
@@ -22,10 +23,10 @@
       { code: "misthub", displayName: "misthub.com" },
     ],
     shopify: [
-      { code: "ELIQUIDCOM", displayName: "eliquid.com" },
-      { code: "EJUICESCO", displayName: "ejuices.co" },
-      { code: "ALOHA", displayName: "aloha.com" },
-      { code: "RODMAN", displayName: "rodman9k.com" },
+      { code: "eliquidcom", displayName: "eliquid.com" },
+      { code: "ejuicesco", displayName: "ejuices.co" },
+      { code: "aloha", displayName: "aloha.com" },
+      { code: "rodman", displayName: "rodman9k.com" },
       { code: "test", displayName: "test" },
     ],
   };
@@ -233,6 +234,9 @@
       },
     };
 
+    console.log("[Migrate] POST to Magento:", API_BASE_URL);
+    console.log("[Migrate] Payload:", JSON.stringify(payload, null, 2));
+
     GM_xmlhttpRequest({
       method: "POST",
       url: API_BASE_URL,
@@ -240,10 +244,18 @@
         "Content-Type": "application/json",
       },
       data: JSON.stringify(payload),
+      onload: (response) => {
+        console.log("[Migrate] Magento response status:", response.status);
+        console.log("[Migrate] Magento response:", response.responseText);
+      },
+      onerror: (error) => {
+        console.error("[Migrate] Magento error:", error);
+      },
     });
   }
 
   function migrateToShopify(sku, shopifyStore, productEnabled) {
+    const url = `${API_BASE_URL}/shopify`;
     const payload = {
       sku: sku,
       options: {
@@ -253,13 +265,23 @@
       },
     };
 
+    console.log("[Migrate] POST to Shopify:", url);
+    console.log("[Migrate] Payload:", JSON.stringify(payload, null, 2));
+
     GM_xmlhttpRequest({
       method: "POST",
-      url: `${API_BASE_URL}/shopify`,
+      url: url,
       headers: {
         "Content-Type": "application/json",
       },
       data: JSON.stringify(payload),
+      onload: (response) => {
+        console.log("[Migrate] Shopify response status:", response.status);
+        console.log("[Migrate] Shopify response:", response.responseText);
+      },
+      onerror: (error) => {
+        console.error("[Migrate] Shopify error:", error);
+      },
     });
   }
 
@@ -324,6 +346,7 @@
       return;
     }
 
+    const url = "https://product-creation-api.vapewholesaleusa.com/api/v1/sync/prices";
     const payload = {
       sku: sku,
       options: {
@@ -334,13 +357,23 @@
       },
     };
 
+    console.log("[SyncPrices] POST to:", url);
+    console.log("[SyncPrices] Payload:", JSON.stringify(payload, null, 2));
+
     GM_xmlhttpRequest({
       method: "POST",
-      url: "https://product-creation-api.vapewholesaleusa.com/api/v1/sync/prices",
+      url: url,
       headers: {
         "Content-Type": "application/json",
       },
       data: JSON.stringify(payload),
+      onload: (response) => {
+        console.log("[SyncPrices] Response status:", response.status);
+        console.log("[SyncPrices] Response:", response.responseText);
+      },
+      onerror: (error) => {
+        console.error("[SyncPrices] Error:", error);
+      },
     });
 
     const targets = [];
