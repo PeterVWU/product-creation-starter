@@ -14,8 +14,8 @@
 (function () {
   "use strict";
 
-  const API_BASE_URL = "https://product-creation-api.vapewholesaleusa.com/api/v1/migrate/product";
-  //const API_BASE_URL = "http://localhost:3002/api/v1/migrate/product";
+  const API_BASE_URL = "https://product-creation-api.vapewholesaleusa.com";
+  //const API_BASE_URL = "http://localhost:3002";
 
   const STORE_CONFIG = {
     magento: [
@@ -37,6 +37,9 @@
       bottom: 20px;
       right: 20px;
       z-index: 10000;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
     }
 
     .migrate-btn {
@@ -152,6 +155,11 @@
     .migrate-notification.error { background: #dc3545; }
     .migrate-notification.warning { background: #fd7e14; }
 
+    .migrate-btn.generate-desc {
+      background: #6f42c1;
+      margin-top: 8px;
+    }
+
     .migrate-notification-title {
       font-weight: bold;
       margin-bottom: 4px;
@@ -233,13 +241,13 @@
         productEnabled: productEnabled,
       },
     };
-
-    console.log("[Migrate] POST to Magento:", API_BASE_URL);
+    const url = `${API_BASE_URL}/api/v1/migrate/product`;
+    console.log("[Migrate] POST to Magento:", url);
     console.log("[Migrate] Payload:", JSON.stringify(payload, null, 2));
 
     GM_xmlhttpRequest({
       method: "POST",
-      url: API_BASE_URL,
+      url: url,
       headers: {
         "Content-Type": "application/json",
       },
@@ -255,7 +263,7 @@
   }
 
   function migrateToShopify(sku, shopifyStore, productEnabled) {
-    const url = `${API_BASE_URL}/shopify`;
+    const url = `${API_BASE_URL}/api/v1/migrate/product/shopify`;
     const payload = {
       sku: sku,
       options: {
@@ -346,7 +354,7 @@
       return;
     }
 
-    const url = "https://product-creation-api.vapewholesaleusa.com/api/v1/sync/prices";
+    const url = `${API_BASE_URL}/api/v1/sync/prices`;
     const payload = {
       sku: sku,
       options: {
@@ -397,6 +405,41 @@
     if (panel) {
       panel.classList.remove("visible");
     }
+  }
+
+  function generateDescription() {
+    const sku = getSku();
+
+    if (!sku) {
+      showNotification("error", "Error", "Could not find SKU on this page.");
+      return;
+    }
+
+    const url = `${API_BASE_URL}/api/v1/products/generate-description`;
+    const payload = { sku: sku };
+
+    console.log("[GenerateDescription] POST to:", url);
+    console.log("[GenerateDescription] Payload:", JSON.stringify(payload, null, 2));
+
+    GM_xmlhttpRequest({
+      method: "POST",
+      url: url,
+      headers: { "Content-Type": "application/json" },
+      data: JSON.stringify(payload),
+      onload: (response) => {
+        console.log("[GenerateDescription] Response status:", response.status);
+        console.log("[GenerateDescription] Response:", response.responseText);
+        if (response.status >= 200 && response.status < 300) {
+          showNotification("success", "Request Sent", `Description generation requested for SKU: ${sku}`);
+        } else {
+          showNotification("error", "Error", `Failed to generate description: ${response.status}`);
+        }
+      },
+      onerror: (error) => {
+        console.error("[GenerateDescription] Error:", error);
+        showNotification("error", "Error", "Failed to send generate description request.");
+      },
+    });
   }
 
   function createStorePanel() {
@@ -491,6 +534,15 @@
     });
 
     container.appendChild(button);
+
+    const generateDescBtn = document.createElement("button");
+    generateDescBtn.className = "migrate-btn generate-desc";
+    generateDescBtn.textContent = "Generate Description";
+    generateDescBtn.addEventListener("click", () => {
+      generateDescription();
+    });
+
+    container.appendChild(generateDescBtn);
     document.body.appendChild(container);
   }
 
