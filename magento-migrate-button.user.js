@@ -19,7 +19,7 @@
 
   const STORE_CONFIG = {
     magento: [
-      { code: "default", displayName: "ejuices.com" },
+      { code: "ejuices", displayName: "ejuices.com" },
       { code: "misthub", displayName: "misthub.com" },
     ],
     shopify: [
