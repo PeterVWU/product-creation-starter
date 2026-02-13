@@ -238,7 +238,7 @@
         includeImages: true,
         createMissingAttributes: true,
         overwriteExisting: false,
-        targetStores: targetStores,
+        targetMagentoStores: targetStores,
         productEnabled: productEnabled,
       },
     };
