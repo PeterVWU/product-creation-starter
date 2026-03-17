@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Magento Product Migration Button
 // @namespace    https://vapewholesaleusa.com/
-// @version      1.1.0
+// @version      1.2.0
 // @description  Adds a "Migrate Product" button to the Magento admin product edit page
 // @author       VWUSA
 // @match        https://as.vapewholesaleusa.com/admin_N7zuJfehzDnf/catalog/product/edit/*
@@ -182,6 +182,16 @@
     const styleEl = document.createElement("style");
     styleEl.textContent = STYLES;
     document.head.appendChild(styleEl);
+  }
+
+  function isStandaloneProduct() {
+    const visibilitySelect = document.querySelector('select[name="product[visibility]"]');
+    const configurableMatrix = document.querySelector('[data-index="configurable-matrix"]');
+
+    const visibilityIsNotHidden = visibilitySelect && visibilitySelect.value !== "1";
+    const hasNoConfigurations = !configurableMatrix || configurableMatrix.style.display === "none";
+
+    return visibilityIsNotHidden && hasNoConfigurations;
   }
 
   function getSku() {
@@ -519,6 +529,46 @@
     return panel;
   }
 
+  function updateButtonState(button) {
+    const configurableMatrix = document.querySelector('[data-index="configurable-matrix"]');
+    const hasConfigurations = configurableMatrix && configurableMatrix.style.display !== "none";
+    const visibilitySelect = document.querySelector('select[name="product[visibility]"]');
+    const isVariant = visibilitySelect && visibilitySelect.value === "1" && !hasConfigurations;
+
+    if (hasConfigurations) {
+      button.textContent = "Migrate Configurable Product";
+      button.disabled = false;
+    } else if (isVariant) {
+      button.textContent = "Cant Migrate Single Variant";
+      button.disabled = true;
+    } else if (isStandaloneProduct()) {
+      button.textContent = "Migrate Standalone Product";
+      button.disabled = false;
+    } else {
+      button.textContent = "Migrate Product";
+      button.disabled = false;
+    }
+  }
+
+  function waitForProductRender(button) {
+    const CHECK_INTERVAL = 300;
+    const MAX_WAIT = 15000;
+    let elapsed = 0;
+
+    const interval = setInterval(() => {
+      elapsed += CHECK_INTERVAL;
+      const visibilitySelect = document.querySelector('select[name="product[visibility]"]');
+      const configurableMatrix = document.querySelector('[data-index="configurable-matrix"]');
+
+      const isReady = visibilitySelect && visibilitySelect.value !== "" && configurableMatrix;
+
+      if (isReady || elapsed >= MAX_WAIT) {
+        clearInterval(interval);
+        updateButtonState(button);
+      }
+    }, CHECK_INTERVAL);
+  }
+
   function createButton() {
     const container = document.createElement("div");
     container.className = "migrate-btn-container";
@@ -528,7 +578,10 @@
 
     const button = document.createElement("button");
     button.className = "migrate-btn";
-    button.textContent = "Migrate Product";
+    button.textContent = "Loading...";
+    button.disabled = true;
+
+    waitForProductRender(button);
 
     button.addEventListener("click", () => {
       panel.classList.toggle("visible");
