@@ -140,6 +140,11 @@
       color: white;
     }
 
+    .migrate-actions .migrate-update-fields {
+      background: #17a2b8;
+      color: white;
+    }
+
     .migrate-notification {
       position: fixed;
       top: 20px;
@@ -418,6 +423,74 @@
     }
   }
 
+  function updateProductFields() {
+    const sku = getSku();
+
+    if (!sku) {
+      showNotification("error", "Error", "Could not find SKU on this page.");
+      return;
+    }
+
+    const { magentoStores, shopifyStores } = getSelectedStores();
+
+    if (magentoStores.length === 0 && shopifyStores.length === 0) {
+      showNotification("error", "Error", "Please select at least one target store.");
+      return;
+    }
+
+    const url = `${API_BASE_URL}/api/v1/sync/product-fields`;
+    const payload = {
+      sku: sku,
+      options: {
+        targetMagentoStores: magentoStores,
+        targetShopifyStores: shopifyStores,
+        includeMagento: magentoStores.length > 0,
+        includeShopify: shopifyStores.length > 0,
+      },
+    };
+
+    console.log("[UpdateFields] POST to:", url);
+    console.log("[UpdateFields] Payload:", JSON.stringify(payload, null, 2));
+
+    GM_xmlhttpRequest({
+      method: "POST",
+      url: url,
+      headers: {
+        "Content-Type": "application/json",
+      },
+      data: JSON.stringify(payload),
+      onload: (response) => {
+        console.log("[UpdateFields] Response status:", response.status);
+        console.log("[UpdateFields] Response:", response.responseText);
+      },
+      onerror: (error) => {
+        console.error("[UpdateFields] Error:", error);
+      },
+    });
+
+    const targets = [];
+    magentoStores.forEach((code) => {
+      const store = STORE_CONFIG.magento.find((s) => s.code === code);
+      targets.push(store ? store.displayName : code);
+    });
+    shopifyStores.forEach((code) => {
+      const store = STORE_CONFIG.shopify.find((s) => s.code === code);
+      targets.push(`Shopify: ${store ? store.displayName : code}`);
+    });
+
+    showNotification(
+      "success",
+      "Request Sent",
+      `Product fields update request sent for SKU: ${sku} to: ${targets.join(", ")}`
+    );
+
+    // Hide the panel after update
+    const panel = document.querySelector(".migrate-store-panel");
+    if (panel) {
+      panel.classList.remove("visible");
+    }
+  }
+
   function generateDescription() {
     const sku = getSku();
 
@@ -509,6 +582,7 @@
     actions.innerHTML = `
       <button class="migrate-cancel">Cancel</button>
       <button class="migrate-sync-prices">Sync Prices</button>
+      <button class="migrate-update-fields">Update Fields</button>
       <button class="migrate-submit">Migrate</button>
     `;
 
@@ -518,6 +592,10 @@
 
     actions.querySelector(".migrate-sync-prices").addEventListener("click", () => {
       syncPrices();
+    });
+
+    actions.querySelector(".migrate-update-fields").addEventListener("click", () => {
+      updateProductFields();
     });
 
     actions.querySelector(".migrate-submit").addEventListener("click", () => {
