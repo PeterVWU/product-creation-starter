@@ -28,6 +28,7 @@
       { code: "vapordna", displayName: "vapordna.com" },
       { code: "aloha", displayName: "aloha.com" },
       { code: "rodman", displayName: "rodman9k.com" },
+      { code: "vapejuice", displayName: "vapejuice.com" },
       { code: "test", displayName: "test" },
     ],
   };
@@ -555,7 +556,7 @@
     STORE_CONFIG.shopify.forEach((store) => {
       const option = document.createElement("div");
       option.className = "migrate-store-option";
-      const isChecked = !["vapordna", "aloha", "rodman", "test"].includes(store.code);
+      const isChecked = !["vapordna", "aloha", "rodman", "test", "vapejuice"].includes(store.code);
       option.innerHTML = `
         <input type="checkbox" id="store-shopify-${store.code}" data-store-code="${store.code}" data-store-type="shopify" ${isChecked ? "checked" : ""}>
         <label for="store-shopify-${store.code}">${store.displayName}</label>
