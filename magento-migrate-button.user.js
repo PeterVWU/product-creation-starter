@@ -176,6 +176,16 @@
       margin-top: 8px;
     }
 
+    .migrate-btn.go-to-parent {
+      background: #007bff;
+      margin-top: 8px;
+    }
+
+    .migrate-btn.go-to-parent:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
     .migrate-actions .migrate-delete {
       background: #dc3545;
       color: white;
@@ -832,6 +842,71 @@
     }
   }
 
+  function fetchParentProduct(sku, callback) {
+    const url = `${API_BASE_URL}/api/v1/products/${encodeURIComponent(sku)}/parent`;
+    console.log("[Parent] GET:", url);
+
+    GM_xmlhttpRequest({
+      method: "GET",
+      url: url,
+      headers: {
+        "Content-Type": "application/json",
+        "x-api-key": API_KEY,
+      },
+      onload: (response) => {
+        console.log("[Parent] Response status:", response.status);
+        console.log("[Parent] Response:", response.responseText);
+        if (response.status >= 200 && response.status < 300) {
+          const result = JSON.parse(response.responseText);
+          callback(null, result.data);
+        } else {
+          callback(`Failed to fetch parent: HTTP ${response.status}`);
+        }
+      },
+      onerror: (error) => {
+        console.error("[Parent] Error:", error);
+        callback("Failed to fetch parent product");
+      },
+    });
+  }
+
+  function goToParentProduct(button) {
+    const sku = getSku();
+    if (!sku) {
+      showNotification("error", "Error", "Could not find SKU on this page.");
+      return;
+    }
+
+    button.disabled = true;
+    button.textContent = "Finding Parent...";
+
+    fetchParentProduct(sku, (err, data) => {
+      if (err) {
+        showNotification("error", "Error", err);
+        button.disabled = false;
+        button.textContent = "Go to Parent Product";
+        return;
+      }
+
+      if (!data.isVariant) {
+        showNotification("warning", "Not a Variant", data.message || "This product is not a variant.");
+        button.disabled = false;
+        button.textContent = "Go to Parent Product";
+        return;
+      }
+
+      if (!data.parentFound || !data.parent || !data.parent.adminUrl) {
+        showNotification("warning", "Parent Not Found", data.message || "Could not find parent product.");
+        button.disabled = false;
+        button.textContent = "Go to Parent Product";
+        return;
+      }
+
+      showNotification("success", "Parent Found", `Navigating to parent: ${data.parent.sku}`);
+      window.location.href = data.parent.adminUrl;
+    });
+  }
+
   function generateDescription() {
     const sku = getSku();
 
@@ -1013,18 +1088,24 @@
     const visibilitySelect = document.querySelector('select[name="product[visibility]"]');
     const isVariant = visibilitySelect && visibilitySelect.value === "1" && !hasConfigurations;
 
+    const parentBtn = document.querySelector(".migrate-btn.go-to-parent");
+
     if (hasConfigurations) {
       button.textContent = "Migrate Configurable Product";
       button.disabled = false;
+      if (parentBtn) parentBtn.style.display = "none";
     } else if (isVariant) {
       button.textContent = "Cant Migrate Single Variant";
       button.disabled = true;
+      if (parentBtn) parentBtn.style.display = "";
     } else if (isStandaloneProduct()) {
       button.textContent = "Migrate Standalone Product";
       button.disabled = false;
+      if (parentBtn) parentBtn.style.display = "none";
     } else {
       button.textContent = "Migrate Product";
       button.disabled = false;
+      if (parentBtn) parentBtn.style.display = "none";
     }
   }
 
@@ -1158,6 +1239,15 @@
     });
 
     container.appendChild(button);
+
+    const goToParentBtn = document.createElement("button");
+    goToParentBtn.className = "migrate-btn go-to-parent";
+    goToParentBtn.textContent = "Go to Parent Product";
+    goToParentBtn.style.display = "none";
+    goToParentBtn.addEventListener("click", () => {
+      goToParentProduct(goToParentBtn);
+    });
+    container.appendChild(goToParentBtn);
 
     const generateDescBtn = document.createElement("button");
     generateDescBtn.className = "migrate-btn generate-desc";
