@@ -16,6 +16,10 @@
 
   const API_BASE_URL = "https://product-creation-api.vapewholesaleusa.com";
   //const API_BASE_URL = "http://localhost:3002";
+  const API_KEY = "your-api-key-here";
+
+  // Feature flags
+  const ENABLE_DELETE_FEATURE = false;
 
   const STORE_CONFIG = {
     magento: [
@@ -167,6 +171,196 @@
       margin-top: 8px;
     }
 
+    .migrate-btn.manage-prompts {
+      background: #e83e8c;
+      margin-top: 8px;
+    }
+
+    .migrate-actions .migrate-delete {
+      background: #dc3545;
+      color: white;
+    }
+
+    .migrate-confirm-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.5);
+      z-index: 10003;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .migrate-confirm-dialog {
+      background: white;
+      border-radius: 8px;
+      padding: 24px;
+      max-width: 420px;
+      width: 90%;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+    }
+
+    .migrate-confirm-dialog h3 {
+      margin: 0 0 12px 0;
+      color: #dc3545;
+      font-size: 18px;
+    }
+
+    .migrate-confirm-dialog p {
+      margin: 0 0 8px 0;
+      font-size: 14px;
+      color: #333;
+    }
+
+    .migrate-confirm-dialog .confirm-store-list {
+      margin: 12px 0;
+      padding: 8px 12px;
+      background: #f8f9fa;
+      border-radius: 4px;
+      font-size: 13px;
+      color: #555;
+    }
+
+    .migrate-confirm-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 16px;
+      justify-content: flex-end;
+    }
+
+    .migrate-confirm-actions button {
+      padding: 8px 20px;
+      border: none;
+      border-radius: 4px;
+      font-size: 13px;
+      cursor: pointer;
+    }
+
+    .migrate-confirm-actions .confirm-cancel {
+      background: #6c757d;
+      color: white;
+    }
+
+    .migrate-confirm-actions .confirm-delete {
+      background: #dc3545;
+      color: white;
+    }
+
+    .prompt-panel {
+      position: fixed;
+      top: 0;
+      right: 0;
+      width: 480px;
+      height: 100%;
+      background: white;
+      box-shadow: -2px 0 12px rgba(0,0,0,0.2);
+      z-index: 10002;
+      display: none;
+      flex-direction: column;
+      font-family: Arial, sans-serif;
+    }
+
+    .prompt-panel.visible {
+      display: flex;
+    }
+
+    .prompt-panel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px;
+      border-bottom: 1px solid #eee;
+    }
+
+    .prompt-panel-header h3 {
+      margin: 0;
+      font-size: 16px;
+      color: #333;
+    }
+
+    .prompt-panel-close {
+      background: none;
+      border: none;
+      font-size: 20px;
+      cursor: pointer;
+      color: #666;
+    }
+
+    .prompt-panel-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px;
+    }
+
+    .prompt-store-item {
+      margin-bottom: 16px;
+      border: 1px solid #e0e0e0;
+      border-radius: 4px;
+      padding: 12px;
+    }
+
+    .prompt-store-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .prompt-store-name {
+      font-weight: bold;
+      font-size: 13px;
+      color: #333;
+    }
+
+    .prompt-store-type {
+      font-size: 11px;
+      color: #999;
+      text-transform: uppercase;
+    }
+
+    .prompt-store-item textarea {
+      width: 100%;
+      min-height: 80px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      padding: 8px;
+      font-size: 13px;
+      resize: vertical;
+      box-sizing: border-box;
+      font-family: inherit;
+    }
+
+    .prompt-store-actions {
+      display: flex;
+      justify-content: flex-end;
+      margin-top: 8px;
+    }
+
+    .prompt-save-btn {
+      background: #28a745;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      padding: 6px 16px;
+      font-size: 12px;
+      cursor: pointer;
+    }
+
+    .prompt-save-btn:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+
+    .prompt-loading {
+      text-align: center;
+      padding: 40px;
+      color: #999;
+      font-size: 14px;
+    }
+
     .migrate-notification-title {
       font-weight: bold;
       margin-bottom: 4px;
@@ -267,6 +461,7 @@
       url: url,
       headers: {
         "Content-Type": "application/json",
+        "x-api-key": API_KEY,
       },
       data: JSON.stringify(payload),
       onload: (response) => {
@@ -298,6 +493,7 @@
       url: url,
       headers: {
         "Content-Type": "application/json",
+        "x-api-key": API_KEY,
       },
       data: JSON.stringify(payload),
       onload: (response) => {
@@ -390,6 +586,7 @@
       url: url,
       headers: {
         "Content-Type": "application/json",
+        "x-api-key": API_KEY,
       },
       data: JSON.stringify(payload),
       onload: (response) => {
@@ -458,6 +655,7 @@
       url: url,
       headers: {
         "Content-Type": "application/json",
+        "x-api-key": API_KEY,
       },
       data: JSON.stringify(payload),
       onload: (response) => {
@@ -492,6 +690,148 @@
     }
   }
 
+  function deleteProductFromStore(sku, platform, storeName) {
+    let url = `${API_BASE_URL}/api/v1/products/${encodeURIComponent(sku)}?platform=${platform}`;
+    if (storeName) {
+      url += `&storeName=${storeName}`;
+    }
+
+    console.log("[Delete] DELETE:", url);
+
+    return new Promise((resolve, reject) => {
+      GM_xmlhttpRequest({
+        method: "DELETE",
+        url: url,
+        headers: {
+          "Content-Type": "application/json",
+          "x-api-key": API_KEY,
+        },
+        onload: (response) => {
+          console.log("[Delete] Response status:", response.status);
+          console.log("[Delete] Response:", response.responseText);
+          if (response.status >= 200 && response.status < 300) {
+            resolve(JSON.parse(response.responseText));
+          } else {
+            reject(`HTTP ${response.status}: ${response.responseText}`);
+          }
+        },
+        onerror: (error) => {
+          console.error("[Delete] Error:", error);
+          reject(error);
+        },
+      });
+    });
+  }
+
+  function showDeleteConfirmation() {
+    const sku = getSku();
+    if (!sku) {
+      showNotification("error", "Error", "Could not find SKU on this page.");
+      return;
+    }
+
+    const { magentoStores, shopifyStores } = getSelectedStores();
+    if (magentoStores.length === 0 && shopifyStores.length === 0) {
+      showNotification("error", "Error", "Please select at least one target store.");
+      return;
+    }
+
+    const targetNames = [];
+    magentoStores.forEach((code) => {
+      const store = STORE_CONFIG.magento.find((s) => s.code === code);
+      targetNames.push(store ? store.displayName : code);
+    });
+    shopifyStores.forEach((code) => {
+      const store = STORE_CONFIG.shopify.find((s) => s.code === code);
+      targetNames.push(`Shopify: ${store ? store.displayName : code}`);
+    });
+
+    const overlay = document.createElement("div");
+    overlay.className = "migrate-confirm-overlay";
+    overlay.innerHTML = `
+      <div class="migrate-confirm-dialog">
+        <h3>Delete Product</h3>
+        <p>Are you sure you want to delete <strong>${sku}</strong> from the following stores?</p>
+        <div class="confirm-store-list">${targetNames.join("<br>")}</div>
+        <p>This action cannot be undone. Configurable products will have all child variants deleted as well.</p>
+        <div class="migrate-confirm-actions">
+          <button class="confirm-cancel">Cancel</button>
+          <button class="confirm-delete">Delete</button>
+        </div>
+      </div>
+    `;
+
+    document.body.appendChild(overlay);
+
+    overlay.querySelector(".confirm-cancel").addEventListener("click", () => {
+      overlay.remove();
+    });
+
+    overlay.addEventListener("click", (e) => {
+      if (e.target === overlay) {
+        overlay.remove();
+      }
+    });
+
+    overlay.querySelector(".confirm-delete").addEventListener("click", () => {
+      overlay.remove();
+      executeDelete(sku, magentoStores, shopifyStores, targetNames);
+    });
+  }
+
+  function executeDelete(sku, magentoStores, shopifyStores, targetNames) {
+    const promises = [];
+
+    magentoStores.forEach((storeName) => {
+      promises.push(
+        deleteProductFromStore(sku, "target-magento", storeName)
+          .then(() => ({ store: storeName, success: true }))
+          .catch((err) => ({ store: storeName, success: false, error: err }))
+      );
+    });
+
+    shopifyStores.forEach((storeName) => {
+      promises.push(
+        deleteProductFromStore(sku, "target-shopify", storeName)
+          .then(() => ({ store: storeName, success: true }))
+          .catch((err) => ({ store: storeName, success: false, error: err }))
+      );
+    });
+
+    showNotification("warning", "Deleting...", `Deleting ${sku} from ${targetNames.join(", ")}`, 0);
+
+    Promise.all(promises).then((results) => {
+      const succeeded = results.filter((r) => r.success);
+      const failed = results.filter((r) => !r.success);
+
+      if (failed.length === 0) {
+        showNotification(
+          "success",
+          "Deleted",
+          `Successfully deleted ${sku} from ${targetNames.join(", ")}`
+        );
+      } else if (succeeded.length === 0) {
+        showNotification(
+          "error",
+          "Delete Failed",
+          `Failed to delete ${sku} from all stores. Check console for details.`
+        );
+      } else {
+        showNotification(
+          "warning",
+          "Partial Delete",
+          `Deleted from: ${succeeded.map((r) => r.store).join(", ")}. Failed: ${failed.map((r) => r.store).join(", ")}`,
+          0
+        );
+      }
+    });
+
+    const panel = document.querySelector(".migrate-store-panel");
+    if (panel) {
+      panel.classList.remove("visible");
+    }
+  }
+
   function generateDescription() {
     const sku = getSku();
 
@@ -509,7 +849,7 @@
     GM_xmlhttpRequest({
       method: "POST",
       url: url,
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", "x-api-key": API_KEY },
       data: JSON.stringify(payload),
       onload: (response) => {
         console.log("[GenerateDescription] Response status:", response.status);
@@ -523,6 +863,58 @@
       onerror: (error) => {
         console.error("[GenerateDescription] Error:", error);
         showNotification("error", "Error", "Failed to send generate description request.");
+      },
+    });
+  }
+
+  function fetchPrompts(callback) {
+    const url = `${API_BASE_URL}/api/v1/prompts`;
+    console.log("[Prompts] GET:", url);
+
+    GM_xmlhttpRequest({
+      method: "GET",
+      url: url,
+      headers: { "Content-Type": "application/json", "x-api-key": API_KEY },
+      onload: (response) => {
+        console.log("[Prompts] Response status:", response.status);
+        console.log("[Prompts] Response:", response.responseText);
+        if (response.status >= 200 && response.status < 300) {
+          const result = JSON.parse(response.responseText);
+          callback(null, result.data || []);
+        } else {
+          callback("Failed to fetch prompts: " + response.status);
+        }
+      },
+      onerror: (error) => {
+        console.error("[Prompts] Error:", error);
+        callback("Failed to fetch prompts");
+      },
+    });
+  }
+
+  function savePrompt(storeCode, promptText, callback) {
+    const url = `${API_BASE_URL}/api/v1/prompts/${storeCode}`;
+    const payload = { prompt: promptText };
+    console.log("[Prompts] POST:", url);
+    console.log("[Prompts] Payload:", JSON.stringify(payload, null, 2));
+
+    GM_xmlhttpRequest({
+      method: "POST",
+      url: url,
+      headers: { "Content-Type": "application/json", "x-api-key": API_KEY },
+      data: JSON.stringify(payload),
+      onload: (response) => {
+        console.log("[Prompts] Save response status:", response.status);
+        console.log("[Prompts] Save response:", response.responseText);
+        if (response.status >= 200 && response.status < 300) {
+          callback(null);
+        } else {
+          callback("Failed to save prompt: " + response.status);
+        }
+      },
+      onerror: (error) => {
+        console.error("[Prompts] Save error:", error);
+        callback("Failed to save prompt");
       },
     });
   }
@@ -582,6 +974,7 @@
     actions.className = "migrate-actions";
     actions.innerHTML = `
       <button class="migrate-cancel">Cancel</button>
+      ${ENABLE_DELETE_FEATURE ? '<button class="migrate-delete">Delete</button>' : ''}
       <button class="migrate-sync-prices">Sync Prices</button>
       <button class="migrate-update-fields">Update Fields</button>
       <button class="migrate-submit">Migrate</button>
@@ -590,6 +983,12 @@
     actions.querySelector(".migrate-cancel").addEventListener("click", () => {
       panel.classList.remove("visible");
     });
+
+    if (ENABLE_DELETE_FEATURE) {
+      actions.querySelector(".migrate-delete").addEventListener("click", () => {
+        showDeleteConfirmation();
+      });
+    }
 
     actions.querySelector(".migrate-sync-prices").addEventListener("click", () => {
       syncPrices();
@@ -648,6 +1047,98 @@
     }, CHECK_INTERVAL);
   }
 
+  function createPromptPanel() {
+    const panel = document.createElement("div");
+    panel.className = "prompt-panel";
+
+    const header = document.createElement("div");
+    header.className = "prompt-panel-header";
+    header.innerHTML = '<h3>AI Prompt Management</h3>';
+
+    const closeBtn = document.createElement("button");
+    closeBtn.className = "prompt-panel-close";
+    closeBtn.textContent = "\u00d7";
+    closeBtn.addEventListener("click", () => {
+      panel.classList.remove("visible");
+    });
+    header.appendChild(closeBtn);
+    panel.appendChild(header);
+
+    const body = document.createElement("div");
+    body.className = "prompt-panel-body";
+    body.innerHTML = '<div class="prompt-loading">Loading prompts...</div>';
+    panel.appendChild(body);
+
+    panel.loadPrompts = function () {
+      body.innerHTML = '<div class="prompt-loading">Loading prompts...</div>';
+
+      fetchPrompts((err, prompts) => {
+        if (err) {
+          body.innerHTML = '<div class="prompt-loading">Failed to load prompts.</div>';
+          showNotification("error", "Error", err);
+          return;
+        }
+
+        const promptMap = {};
+        prompts.forEach((p) => {
+          promptMap[p.store_name] = p.prompt_text || "";
+        });
+
+        body.innerHTML = "";
+
+        const allStores = [
+          ...STORE_CONFIG.magento.map((s) => ({ ...s, type: "magento" })),
+          ...STORE_CONFIG.shopify.map((s) => ({ ...s, type: "shopify" })),
+        ];
+
+        allStores.forEach((store) => {
+          const item = document.createElement("div");
+          item.className = "prompt-store-item";
+
+          const storeHeader = document.createElement("div");
+          storeHeader.className = "prompt-store-header";
+          storeHeader.innerHTML = `
+            <span class="prompt-store-name">${store.displayName}</span>
+            <span class="prompt-store-type">${store.type}</span>
+          `;
+          item.appendChild(storeHeader);
+
+          const textarea = document.createElement("textarea");
+          textarea.value = promptMap[store.code] || "";
+          textarea.placeholder = "Enter AI prompt for this store...";
+          item.appendChild(textarea);
+
+          const actions = document.createElement("div");
+          actions.className = "prompt-store-actions";
+
+          const saveBtn = document.createElement("button");
+          saveBtn.className = "prompt-save-btn";
+          saveBtn.textContent = "Save";
+          saveBtn.addEventListener("click", () => {
+            saveBtn.disabled = true;
+            saveBtn.textContent = "Saving...";
+
+            savePrompt(store.code, textarea.value, (saveErr) => {
+              saveBtn.disabled = false;
+              saveBtn.textContent = "Save";
+              if (saveErr) {
+                showNotification("error", "Error", saveErr);
+              } else {
+                showNotification("success", "Saved", `Prompt saved for ${store.displayName}`);
+              }
+            });
+          });
+
+          actions.appendChild(saveBtn);
+          item.appendChild(actions);
+          body.appendChild(item);
+        });
+      });
+    };
+
+    return panel;
+  }
+
   function createButton() {
     const container = document.createElement("div");
     container.className = "migrate-btn-container";
@@ -676,6 +1167,21 @@
     });
 
     container.appendChild(generateDescBtn);
+
+    const promptPanel = createPromptPanel();
+    document.body.appendChild(promptPanel);
+
+    const managePromptsBtn = document.createElement("button");
+    managePromptsBtn.className = "migrate-btn manage-prompts";
+    managePromptsBtn.textContent = "Manage Prompts";
+    managePromptsBtn.addEventListener("click", () => {
+      promptPanel.classList.toggle("visible");
+      if (promptPanel.classList.contains("visible")) {
+        promptPanel.loadPrompts();
+      }
+    });
+
+    container.appendChild(managePromptsBtn);
     document.body.appendChild(container);
   }
 
