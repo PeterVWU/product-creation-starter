@@ -870,41 +870,41 @@
     });
   }
 
-  function goToParentProduct(button) {
-    const sku = getSku();
-    if (!sku) {
-      showNotification("error", "Error", "Could not find SKU on this page.");
-      return;
-    }
+  let cachedParentUrl = null;
 
-    button.disabled = true;
-    button.textContent = "Finding Parent...";
+  function prefetchParentProduct() {
+    const sku = getSku();
+    const parentBtn = document.querySelector(".migrate-btn.go-to-parent");
+    if (!sku || !parentBtn) return;
+
+    parentBtn.disabled = true;
+    parentBtn.textContent = "Finding Parent...";
 
     fetchParentProduct(sku, (err, data) => {
       if (err) {
-        showNotification("error", "Error", err);
-        button.disabled = false;
-        button.textContent = "Go to Parent Product";
+        parentBtn.textContent = "Parent Not Found";
+        parentBtn.disabled = true;
         return;
       }
 
-      if (!data.isVariant) {
-        showNotification("warning", "Not a Variant", data.message || "This product is not a variant.");
-        button.disabled = false;
-        button.textContent = "Go to Parent Product";
+      if (!data.isVariant || !data.parentFound || !data.parent || !data.parent.adminUrl) {
+        parentBtn.textContent = "Parent Not Found";
+        parentBtn.disabled = true;
         return;
       }
 
-      if (!data.parentFound || !data.parent || !data.parent.adminUrl) {
-        showNotification("warning", "Parent Not Found", data.message || "Could not find parent product.");
-        button.disabled = false;
-        button.textContent = "Go to Parent Product";
-        return;
-      }
-
-      showNotification("success", "Parent Found", `Navigating to parent: ${data.parent.sku}`);
-      window.location.href = data.parent.adminUrl;
+      cachedParentUrl = data.parent.adminUrl;
+      parentBtn.textContent = `Go to Parent: ${data.parent.sku}`;
+      parentBtn.disabled = false;
     });
+  }
+
+  function goToParentProduct() {
+    if (cachedParentUrl) {
+      window.location.href = cachedParentUrl;
+    } else {
+      showNotification("warning", "Not Ready", "Parent product not found yet.");
+    }
   }
 
   function generateDescription() {
@@ -1097,7 +1097,10 @@
     } else if (isVariant) {
       button.textContent = "Cant Migrate Single Variant";
       button.disabled = true;
-      if (parentBtn) parentBtn.style.display = "";
+      if (parentBtn) {
+        parentBtn.style.display = "";
+        prefetchParentProduct();
+      }
     } else if (isStandaloneProduct()) {
       button.textContent = "Migrate Standalone Product";
       button.disabled = false;
@@ -1245,7 +1248,7 @@
     goToParentBtn.textContent = "Go to Parent Product";
     goToParentBtn.style.display = "none";
     goToParentBtn.addEventListener("click", () => {
-      goToParentProduct(goToParentBtn);
+      goToParentProduct();
     });
     container.appendChild(goToParentBtn);
 
